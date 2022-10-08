@@ -5,17 +5,18 @@
         <h5 class="title">New user</h5>
         <form @submit.prevent="createUser">
           <input type="text" placeholder="name" v-model="form.name" />
-          <input type="email" placeholder="email" v-model="form.emaiĺ" />
+          <input type="text" placeholder="email" v-model="form.emaiĺ" />
           <button type="submit">Add new users</button>
         </form>
       </section>
       <section>
         <h5 class="title">User list</h5>
         <ul>
-          <li v-for="User in users" :key="User.id">
-            <p>{{ User.name }}</p>
-            <small>{{ User.email }}</small>
-            <a class="destroy"></a>
+          <li v-for="user in users" :key="user.id">
+            <!-- can be used this way v-for="(user, index) -->
+            <p>{{ user.name }}</p>
+            <small>{{ user.email }}</small>
+            <a class="destroy" @click="destroyUser(user.id)"></a>
           </li>
         </ul>
       </section>
@@ -56,10 +57,25 @@ export default defineComponent({
       }
     },
     async createUser() {
-      const { data } = await axios.post("/users", this.form);
-      this.users.push(data);
-      this.form.name = "";
-      this.form.emaiĺ = "";
+      try {
+        const { data } = await axios.post("/users", this.form);
+        this.users.push(data);
+        this.form = {
+          name: "",
+          emaiĺ: "",
+        };
+      } catch (error) {
+        console.warn(error);
+      }
+    },
+    async destroyUser(id: User["id"]) {
+      try {
+        await axios.delete(`/users/${id}`);
+        const userIndex = this.users.findIndex((user) => user.id === id);
+        this.users.splice(userIndex, 1);
+      } catch (error) {
+        console.warn(error);
+      }
     },
   },
 });
